@@ -1,0 +1,7 @@
+package: github.com/skyrings/istio-poc
+import:
+- package: k8s.io/client-go
+  subpackages:
+  - rest
+- package: github.com/ghodss/yaml
+  version: ^1.0.0

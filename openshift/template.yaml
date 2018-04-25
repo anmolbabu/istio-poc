@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: osio-hypothesis-istio-poc
+metadata:
+  name: osio-hypothesis-istio-poc
+  annotations:
+    description: ${APP_NAME}
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: ${APP_NAME}
+    name: ${APP_NAME}
+  spec:
+    replicas: 1
+    selector:
+      app: ${APP_NAME}
+    template:
+      metadata:
+        labels:
+          app: ${APP_NAME}
+      spec:
+        containers:
+          - image: >-
+              anmolb/istio-poc:latest
+            imagePullPolicy: Always
+            name: ${APP_NAME}
+            env:
+            - name: BEARER_STR
+              value: ${BEARER_STR}
+            readinessProbe:
+              httpGet:
+                path: /manager/api/v1.0/readiness
+                port: ${{HDD_MANAGER_API_PORT}}
+                scheme: HTTP
+              initialDelaySeconds: 30
+              periodSeconds: 60
+              timeoutSeconds: 10
+            livenessProbe:
+              httpGet:
+                path: /manager/api/v1.0/liveness
+                port: ${{HDD_MANAGER_API_PORT}}
+                scheme: HTTP
+              initialDelaySeconds: 30
+              periodSeconds: 60
+              timeoutSeconds: 10
+            resources:
+              requests:
+                memory: "512Mi"
+                cpu: "500m"
+              limits:
+                memory: "1024Mi"
+                cpu: "1000m"
+            securityContext:
+              privileged: false
+      triggers:
+        - type: ConfigChange
+parameters:
+- name: HDD_MANAGER_API_PORT
+  description: Port number that manager-api service will be exposed on.
+  required: true
+  value: "8888"
+- name: HDD_MANAGER_SERVICE_TARGET_PORT
+  description: Port number that manager-api service will map to.
+  required: true
+  value: "8888"
+- name: HDD_MANAGER_API_HOSTNAME
+  description: Parameterised hostname route for the manager-api service.
+  required: false
+- description: Image tag
+  displayName: Image tag
+  required: true
+  name: IMAGE_TAG
+  value: "latest"
+- description: Name of the app
+  displayName: Name of the app
+  required: true
+  name: APP_NAME
+  value: "osio-hypothesis-istio-poc"
+- description: Image name
+  displayName: Image name
+  required: true
+  name: IMAGE_NAME
+  value: "osio-hypothesis-manager-api"
+- description: Route path
+  displayName: Route path
+  required: true
+  name: ROUTE_PATH
+  value: "/manager"
+- description: Route prefix
+  displayName: Route prefix
+  required: true
+  name: ROUTE_PREFIX
+  value: "/api/v1.0"
+- description: BEARER STRING
+  displayName: BEARER STRING
+  required: true
+  name: BEARER_STR
+  value: "1AMVwFGxgpp9SUyJQ59ETW0cpgmW7g0vZZhaFGScySQ"
