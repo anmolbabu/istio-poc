@@ -1,15 +1,18 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"net"
 	"os"
+	"path/filepath"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
 func getRule() *unstructured.Unstructured {
@@ -45,19 +48,30 @@ func main() {
 	}
 	metric_namespace := "istio-system"
 	resource := &metav1.APIResource{Name: "rules", Namespaced: len(metric_namespace) != 0}
-	kube_client, err := dynamic.NewClient(
-		&restclient.Config{
-			Host: "https://" + net.JoinHostPort(host, port),
-			ContentConfig: restclient.ContentConfig{
-				GroupVersion: &schema.GroupVersion{
-					Group:   "config.istio.io",
-					Version: "v1alpha2",
-				},
-			},
-			BearerToken: os.Getenv("BEARER_STR"),
-		},
-	)
 
+	var kubeconfig *string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
+
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if err != nil {
+		panic(err)
+	}
+	config.Host = "https://" + host
+	config.BearerToken = os.Getenv("BEARER_STR")
+	config.APIPath = "/apis"
+	config.ContentConfig = restclient.ContentConfig{
+		GroupVersion: &schema.GroupVersion{
+			Group:   "config.istio.io",
+			Version: "v1alpha2",
+		},
+	}
+
+	kube_client, err := dynamic.NewClient(config)
 	if err != nil {
 		fmt.Printf("unexpected error when creating client: %v", err)
 		done()

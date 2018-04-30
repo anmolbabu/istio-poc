@@ -7,4 +7,4 @@ ENV ISTIO_POC_HOME=/opt/istio_poc \
 
 COPY istio-poc $ISTIO_POC_HOME/istio_poc
 
-ENTRYPOINT ["/opt/istio_poc/kiali"]
+ENTRYPOINT ["/opt/istio_poc/istio_poc"]

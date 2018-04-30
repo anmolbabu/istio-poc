@@ -7,6 +7,7 @@ DOCKER_TAG = ${DOCKER_NAME}:${DOCKER_VERSION}
 build:
 	go build -o ${GOPATH}/bin/istio-poc
 docker-build:
+	glide install
 	go build -o ${GOPATH}/bin/istio-poc
 	@mkdir -p _output/
 	@cp ${GOPATH}/bin/istio-poc _output/
