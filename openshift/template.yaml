@@ -30,18 +30,20 @@ objects:
             env:
             - name: BEARER_STR
               value: ${BEARER_STR}
+            - name: IN_CLUSTER_CONFIG
+              value: ${IN_CLUSTER_CONFIG}
             readinessProbe:
               httpGet:
-                path: /manager/api/v1.0/readiness
-                port: ${{HDD_MANAGER_API_PORT}}
+                path: /readiness
+                port: 8000
                 scheme: HTTP
               initialDelaySeconds: 30
               periodSeconds: 60
               timeoutSeconds: 10
             livenessProbe:
               httpGet:
-                path: /manager/api/v1.0/liveness
-                port: ${{HDD_MANAGER_API_PORT}}
+                path: /liveness
+                port: 8000
                 scheme: HTTP
               initialDelaySeconds: 30
               periodSeconds: 60
@@ -57,18 +59,21 @@ objects:
               privileged: false
       triggers:
         - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ${APP_NAME}
+    name: ${APP_NAME}
+  spec:
+    ports:
+      - name: ${APP_NAME}
+        port: 8000
+        protocol: TCP
+        targetPort: 8000
+    selector:
+      app: ${APP_NAME}
 parameters:
-- name: HDD_MANAGER_API_PORT
-  description: Port number that manager-api service will be exposed on.
-  required: true
-  value: "8888"
-- name: HDD_MANAGER_SERVICE_TARGET_PORT
-  description: Port number that manager-api service will map to.
-  required: true
-  value: "8888"
-- name: HDD_MANAGER_API_HOSTNAME
-  description: Parameterised hostname route for the manager-api service.
-  required: false
 - description: Image tag
   displayName: Image tag
   required: true
@@ -79,11 +84,6 @@ parameters:
   required: true
   name: APP_NAME
   value: "osio-hypothesis-istio-poc"
-- description: Image name
-  displayName: Image name
-  required: true
-  name: IMAGE_NAME
-  value: "osio-hypothesis-manager-api"
 - description: Route path
   displayName: Route path
   required: true
@@ -98,4 +98,9 @@ parameters:
   displayName: BEARER STRING
   required: true
   name: BEARER_STR
-  value: "1AMVwFGxgpp9SUyJQ59ETW0cpgmW7g0vZZhaFGScySQ"
+  value: "5y9JD52WY4h6qByNdAUSx_8aBxmxMO1B-9CKCRDB6zg"
+- description: In Cluster config
+  displayName: In Cluster config
+  required: true
+  name: IN_CLUSTER_CONFIG
+  value: "true"
