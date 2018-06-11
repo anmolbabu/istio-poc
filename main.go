@@ -30,11 +30,10 @@ func getMetric(metric Metric) *unstructured.Unstructured {
 				"namespace": metric.Namespace,
 			},
 			"spec": map[string]interface{}{
-				"value": "2",
+				"value": "1",
 				"dimensions": map[string]interface{}{
-					"source":      "source.service | \"unknown\"",
-					"destination": "destination.service | \"unknown\"",
-					"message":     "\"twice the fun!\"",
+					"source":     "source.service | \"unknown\"",
+					"user_agent": "request.headers[\"user-agent\"] | \"unknown\"",
 				},
 				"monitored_resource_type": "\"UNSPECIFIED\"",
 			},
@@ -51,12 +50,11 @@ type Metric struct {
 func getPrometheus(metric Metric) *unstructured.Unstructured {
 	labelNames := []string{
 		"source",
-		"destination",
-		"message",
+		"user_agent",
 	}
 	metric1 := map[string]interface{}{
-		"name":          "double_request_count",
-		"instance_name": "doublerequestcount.metric.istio-system",
+		"name":          "source_agent_request_count",
+		"instance_name": "sourceagentrequestcount.metric.istio-system",
 		"kind":          "COUNTER",
 		"label_names":   labelNames,
 	}
@@ -67,7 +65,7 @@ func getPrometheus(metric Metric) *unstructured.Unstructured {
 			"apiVersion": metric.ApiVersion,
 			"kind":       "prometheus",
 			"metadata": map[string]interface{}{
-				"name":      "doublehandler",
+				"name":      "sourceagenthandler",
 				"namespace": metric.Namespace,
 			},
 			"spec": map[string]interface{}{
@@ -92,19 +90,19 @@ func getRule(metric Metric) *unstructured.Unstructured {
 
 	*/
 	var instances [1]string
-	instances[0] = "doublerequestcount.metric"
+	instances[0] = "sourceagentrequestcount.metric"
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": metric.ApiVersion,
 			"kind":       "rule",
 			"metadata": map[string]interface{}{
-				"name":      "doubleprom",
+				"name":      "sourceagentprom",
 				"namespace": metric.Namespace,
 			},
 			"spec": map[string]interface{}{
 				"actions": []map[string]interface{}{
 					map[string]interface{}{
-						"handler":   "doublehandler.prometheus",
+						"handler":   "sourceagenthandler.prometheus",
 						"instances": instances,
 					},
 				},
@@ -123,7 +121,7 @@ func CreateMetric(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var metric Metric
 	_ = json.NewDecoder(r.Body).Decode(&metric)
-	metric_name := "doublerequestcount"
+	metric_name := metric.Name
 	fmt.Printf("The params passed are %v and body is %v", params, metric)
 	host, port := os.Getenv("KUBERNETES_SERVICE_HOST"), os.Getenv("KUBERNETES_SERVICE_PORT")
 	if len(host) == 0 || len(port) == 0 {

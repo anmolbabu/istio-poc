@@ -98,7 +98,7 @@ parameters:
   displayName: BEARER STRING
   required: true
   name: BEARER_STR
-  value: "5y9JD52WY4h6qByNdAUSx_8aBxmxMO1B-9CKCRDB6zg"
+  value: "JMQyNE4GoXmcqdFsBKQbUWg7fmzymWb_7Cg1mgNEFL8"
 - description: In Cluster config
   displayName: In Cluster config
   required: true

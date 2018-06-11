@@ -1,0 +1,112 @@
+{
+    "kind": "List",
+    "apiVersion": "v1",
+    "metadata": {},
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "DeploymentConfig",
+            "metadata": {
+                "labels": {
+                    "app": "osio-hypothesis-istio-poc",
+                    "template": "osio-hypothesis-istio-poc"
+                },
+                "name": "osio-hypothesis-istio-poc"
+            },
+            "spec": {
+                "replicas": 1,
+                "selector": {
+                    "app": "osio-hypothesis-istio-poc"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app": "osio-hypothesis-istio-poc"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "env": [
+                                    {
+                                        "name": "BEARER_STR",
+                                        "value": "YirDJyaU2NVUQ4AIPphyE6yw_UDHMacXH3Bh9df6fEg"
+                                    },
+                                    {
+                                        "name": "IN_CLUSTER_CONFIG",
+                                        "value": "true"
+                                    }
+                                ],
+                                "image": "anmolbabu/istio-poc:latest",
+                                "imagePullPolicy": "Always",
+                                "livenessProbe": {
+                                    "httpGet": {
+                                        "path": "/liveness",
+                                        "port": 8000,
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 30,
+                                    "periodSeconds": 60,
+                                    "timeoutSeconds": 10
+                                },
+                                "name": "osio-hypothesis-istio-poc",
+                                "readinessProbe": {
+                                    "httpGet": {
+                                        "path": "/readiness",
+                                        "port": 8000,
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 30,
+                                    "periodSeconds": 60,
+                                    "timeoutSeconds": 10
+                                },
+                                "resources": {
+                                    "limits": {
+                                        "cpu": "1000m",
+                                        "memory": "1024Mi"
+                                    },
+                                    "requests": {
+                                        "cpu": "500m",
+                                        "memory": "512Mi"
+                                    }
+                                },
+                                "securityContext": {
+                                    "privileged": false
+                                }
+                            }
+                        ]
+                    },
+                    "triggers": [
+                        {
+                            "type": "ConfigChange"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "labels": {
+                    "app": "osio-hypothesis-istio-poc",
+                    "template": "osio-hypothesis-istio-poc"
+                },
+                "name": "osio-hypothesis-istio-poc"
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "osio-hypothesis-istio-poc",
+                        "port": 8000,
+                        "protocol": "TCP",
+                        "targetPort": 8000
+                    }
+                ],
+                "selector": {
+                    "app": "osio-hypothesis-istio-poc"
+                }
+            }
+        }
+    ]
+}
